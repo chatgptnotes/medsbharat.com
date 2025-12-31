@@ -33,18 +33,19 @@ export async function GET(request: NextRequest) {
           mrp,
           available,
           orderCount,
-          pharmacy:pharmacies!pharmacyId (
+          pharmacyId,
+          pharmacy:pharmacies (
             id,
             businessName,
             rating,
             address,
             latitude,
-            longitude
+            longitude,
+            status
           )
         `)
         .ilike('name', `%${query}%`)
         .eq('available', true)
-        .eq('pharmacy.status', 'APPROVED')
         .order('orderCount', { ascending: false })
         .order('price', { ascending: true })
         .limit(50)
@@ -57,10 +58,15 @@ export async function GET(request: NextRequest) {
         )
       }
 
+      // Filter out medicines from non-approved pharmacies
+      const approvedMedicines = medicines?.filter(
+        (med: any) => med.pharmacy?.status === 'APPROVED'
+      ) || []
+
       return NextResponse.json({
         type: 'medicine',
-        results: medicines || [],
-        total: medicines?.length || 0,
+        results: approvedMedicines,
+        total: approvedMedicines.length,
       })
     }
 
