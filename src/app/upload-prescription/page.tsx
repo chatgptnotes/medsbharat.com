@@ -112,28 +112,25 @@ export default function UploadPrescriptionPage() {
     setError('');
 
     try {
-      // Upload to Cloudinary
+      // Upload to Cloudinary via API route
       const uploadedUrls: string[] = [];
 
       for (const { file } of files) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('upload_preset', 'prescriptions'); // You'll need to create this in Cloudinary
 
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          }
-        );
+        const response = await fetch('/api/upload-prescription', {
+          method: 'POST',
+          body: formData,
+        });
 
         if (!response.ok) {
-          throw new Error('Upload failed');
+          const errorData = await response.json();
+          throw new Error(errorData.error || errorData.details || 'Upload failed');
         }
 
         const data = await response.json();
-        uploadedUrls.push(data.secure_url);
+        uploadedUrls.push(data.url);
       }
 
       // Save prescription data to database
