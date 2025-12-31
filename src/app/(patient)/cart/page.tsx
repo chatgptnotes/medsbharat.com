@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/cart';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Minus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Plus, Minus, Trash2, ShoppingBag, ArrowRight, MapPin } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 
