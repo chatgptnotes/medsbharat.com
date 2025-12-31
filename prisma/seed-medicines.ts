@@ -1,14 +1,8 @@
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
-import { Pool } from 'pg';
-import { PrismaPg } from '@prisma/adapter-pg';
 
-// Use DIRECT_DATABASE_URL for seed scripts (non-pooled connection)
-const connectionString = process.env.DIRECT_DATABASE_URL || process.env.DATABASE_URL || '';
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-
-const prisma = new PrismaClient({ adapter });
+// Use standard Prisma Client (no adapter needed with Prisma 6.9.0)
+const prisma = new PrismaClient();
 
 // Common medicines data organized by category
 const commonMedicines = [
