@@ -1,212 +1,97 @@
-import Link from "next/link"
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from "lucide-react"
+import Link from 'next/link'
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'
 
-const footerLinks = {
-  company: [
-    { name: "About Us", href: "/about" },
-    { name: "Careers", href: "/careers" },
-    { name: "Blog", href: "/blog" },
-    { name: "Contact Us", href: "/contact" },
-  ],
-  forPatients: [
-    { name: "Search Medicines", href: "/products" },
-    { name: "Upload Prescription", href: "/upload-prescription" },
-    { name: "Order Medicine", href: "/products" },
-    { name: "Track Order", href: "/dashboard/orders" },
-  ],
-  policies: [
-    { name: "Privacy Policy", href: "/privacy-policy" },
-    { name: "Terms & Conditions", href: "/terms" },
-    { name: "Return Policy", href: "/return-policy" },
-    { name: "Shipping Policy", href: "/shipping-policy" },
-  ],
-  help: [
-    { name: "FAQs", href: "/faqs" },
-    { name: "How to Order", href: "/how-to-order" },
-    { name: "Payment Options", href: "/payment-options" },
-    { name: "Customer Support", href: "/support" },
-  ],
-}
-
-const socialLinks = [
-  { name: "Facebook", icon: Facebook, href: "https://facebook.com" },
-  { name: "Twitter", icon: Twitter, href: "https://twitter.com" },
-  { name: "Instagram", icon: Instagram, href: "https://instagram.com" },
-  { name: "YouTube", icon: Youtube, href: "https://youtube.com" },
-]
-
-const paymentMethods = [
-  "Visa",
-  "Mastercard",
-  "UPI",
-  "Paytm",
-  "PhonePe",
-  "Net Banking",
-  "COD",
-]
-
-export default function Footer() {
+export function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
-      {/* Main Footer */}
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-          {/* Brand & Contact */}
-          <div className="lg:col-span-1">
-            <Link href="/" className="inline-block mb-4">
-              <div className="flex items-center">
-                <span className="text-2xl font-bold text-orange-500">Meds</span>
-                <span className="text-2xl font-bold text-green-600">Bharat</span>
-              </div>
-              <span className="text-xs text-gray-400 block">India's Pharmacy</span>
-            </Link>
+        <div className="grid md:grid-cols-4 gap-8">
+          {/* Company Info */}
+          <div>
+            <div className="flex items-center mb-4">
+              <span className="text-2xl font-bold text-orange-500">Meds</span>
+              <span className="text-2xl font-bold text-green-500">Bharat</span>
+            </div>
             <p className="text-sm text-gray-400 mb-4">
-              India's most trusted online pharmacy for genuine medicines and healthcare products.
-              Serving Bharat with quality healthcare delivered to your doorstep.
+              India's trusted pharmacy marketplace. Compare prices, upload prescriptions, and get medicines delivered fast.
             </p>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm">
-                <Phone className="h-4 w-4 text-orange-500" />
-                <span>1800-XXX-XXXX (Toll Free)</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Mail className="h-4 w-4 text-orange-500" />
+            <div className="flex gap-4">
+              <a href="https://facebook.com" className="hover:text-orange-500 transition-colors">
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a href="https://twitter.com" className="hover:text-orange-500 transition-colors">
+                <Twitter className="h-5 w-5" />
+              </a>
+              <a href="https://instagram.com" className="hover:text-orange-500 transition-colors">
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a href="https://linkedin.com" className="hover:text-orange-500 transition-colors">
+                <Linkedin className="h-5 w-5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="font-semibold text-white mb-4">Quick Links</h3>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/" className="hover:text-orange-500 transition-colors">Home</Link></li>
+              <li><Link href="/search" className="hover:text-orange-500 transition-colors">Search Medicines</Link></li>
+              <li><Link href="/cart" className="hover:text-orange-500 transition-colors">Cart</Link></li>
+              <li><Link href="/dashboard" className="hover:text-orange-500 transition-colors">My Orders</Link></li>
+              <li><Link href="/upload-prescription" className="hover:text-orange-500 transition-colors">Upload Prescription</Link></li>
+            </ul>
+          </div>
+
+          {/* Services */}
+          <div>
+            <h3 className="font-semibold text-white mb-4">Services</h3>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/products?category=medicines" className="hover:text-orange-500 transition-colors">Medicines</Link></li>
+              <li><Link href="/products?category=healthcare" className="hover:text-orange-500 transition-colors">Healthcare</Link></li>
+              <li><Link href="/products?category=diabetes" className="hover:text-orange-500 transition-colors">Diabetes Care</Link></li>
+              <li><Link href="/products?category=personal-care" className="hover:text-orange-500 transition-colors">Personal Care</Link></li>
+              <li><Link href="/products?category=baby-care" className="hover:text-orange-500 transition-colors">Baby Care</Link></li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h3 className="font-semibold text-white mb-4">Contact Us</h3>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 mt-1 flex-shrink-0" />
+                <span>Nagpur, Maharashtra, India</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 flex-shrink-0" />
+                <span>1800-XXX-XXXX</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4 flex-shrink-0" />
                 <span>support@medsbharat.com</span>
-              </div>
-              <div className="flex items-start gap-2 text-sm">
-                <MapPin className="h-4 w-4 text-orange-500 mt-0.5" />
-                <span>Serving All India</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Company Links */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Company</h3>
-            <ul className="space-y-2">
-              {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-sm hover:text-orange-500 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+              </li>
             </ul>
-          </div>
-
-          {/* For Patients Links */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">For Patients</h3>
-            <ul className="space-y-2">
-              {footerLinks.forPatients.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-sm hover:text-orange-500 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Policies Links */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Policies</h3>
-            <ul className="space-y-2">
-              {footerLinks.policies.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-sm hover:text-orange-500 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Help Links */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Help</h3>
-            <ul className="space-y-2">
-              {footerLinks.help.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-sm hover:text-orange-500 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Social & Payment */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            {/* Social Links */}
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-400">Follow us:</span>
-              <div className="flex gap-3">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-orange-500 transition-colors"
-                    aria-label={social.name}
-                  >
-                    <social.icon className="h-5 w-5" />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Payment Methods */}
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <span className="text-sm text-gray-400">Payment Options:</span>
-              {paymentMethods.map((method) => (
-                <span
-                  key={method}
-                  className="text-xs bg-gray-800 px-2 py-1 rounded"
-                >
-                  {method}
-                </span>
-              ))}
+            <div className="mt-4">
+              <p className="text-xs text-gray-500">Customer Support</p>
+              <p className="text-sm font-semibold text-white">Mon-Sun: 8AM - 10PM</p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Bar */}
-      <div className="bg-gray-950 py-4">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-gray-500">
-            <p>&copy; {new Date().getFullYear()} MedsBharat.com. All rights reserved.</p>
-            <p>
-              Drug License No: XX-XXXX-XXXX | FSSAI License: XXXXXXXXXX
+        <div className="border-t border-gray-800 mt-8 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+            <p className="text-gray-500">
+              © 2024 MedsBharat.com. All rights reserved.
             </p>
+            <div className="flex gap-6">
+              <Link href="/privacy" className="hover:text-orange-500 transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-orange-500 transition-colors">Terms of Service</Link>
+              <Link href="/refund" className="hover:text-orange-500 transition-colors">Refund Policy</Link>
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Disclaimer */}
-      <div className="bg-gray-950 border-t border-gray-900 py-3">
-        <div className="container mx-auto px-4">
-          <p className="text-xs text-gray-600 text-center">
-            Disclaimer: The information on this website is for general informational purposes only
-            and is not intended as a substitute for professional medical advice, diagnosis, or treatment.
-            Always seek the advice of your physician or other qualified health provider with any questions
-            you may have regarding a medical condition.
+          <p className="text-xs text-gray-600 mt-4 text-center">
+            Version 1.9 | Last Updated: December 31, 2024 | Repository: chatgptnotes/medsbharat.com
           </p>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { SearchBar } from '@/components/patient/SearchBar'
 import { Search, MapPin, Clock, ShieldCheck } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { CategoryTabs } from '@/components/homepage/CategoryTabs'
+import { RecentlyViewed } from '@/components/homepage/RecentlyViewed'
 
 export default function PatientHomePage() {
   return (
@@ -34,6 +35,9 @@ export default function PatientHomePage() {
           </div>
         </div>
       </section>
+
+      {/* Recently Viewed */}
+      <RecentlyViewed />
 
       {/* Category Tabs with Products */}
       <CategoryTabs />
