@@ -28,14 +28,23 @@
 4. Click **"Run"** button
 5. Wait for "Success" message (~3 seconds)
 
-### Step 4: Verify
+### Step 4: Seed Common Medicines (NEW)
+
+1. Open file: `prisma/migrations/004_seed_medicines.sql`
+2. Copy ALL content (Cmd+A, Cmd+C)
+3. Paste into Supabase SQL Editor
+4. Click **"Run"** button
+5. Wait for "Success" message (~5 seconds)
+6. You should see: **270 rows inserted** (45 medicines × 6 pharmacies)
+
+### Step 5: Verify
 
 Click **"Table Editor"** in Supabase sidebar.
 
 You should see:
 - ✅ 11 tables created
-- ✅ 6 pharmacies in `pharmacies` table
-- ✅ 30 medicines in `medicines` table
+- ✅ 6 pharmacies in `Pharmacy` table
+- ✅ 270 medicines in `Medicine` table (45 unique medicines × 6 pharmacies)
 - ✅ 8 users in `users` table
 
 ---
@@ -48,17 +57,24 @@ Your database is ready. Now:
 
 Visit your Vercel URL (or http://localhost:3000) and:
 
-1. **Search "Metformin"**
-   - Should see results from 6 pharmacies
-   - Prices range from ₹82-88
+1. **Search "Dolo"**
+   - Should see Dolo 650 Tablet from 6 pharmacies
+   - Prices vary (±15% between pharmacies)
 
-2. **Search "Hope Pharmacy"**
+2. **Search "Glycomet"**
+   - Should see Glycomet 500 SR (Diabetes Care)
+   - Requires prescription badge visible
+
+3. **Test Advanced Filters**
+   - Filter by category (Pain Relief, Diabetes Care, etc.)
+   - Filter by price range (₹0-₹1000)
+   - Filter by prescription requirement
+   - Filter by discount percentage
+
+4. **Search "Hope Pharmacy"**
    - Should see Hope Pharmacy card
    - 4.5 star rating, 87 reviews
-
-3. **Click any pharmacy**
-   - Should see full catalog
-   - Category filtering works
+   - Click to see full catalog with 45 medicines
 
 ---
 
@@ -95,7 +111,17 @@ Password: pharmacy123
 ### Data Created
 - 8 Users (1 admin, 1 patient, 6 pharmacy owners)
 - 6 Pharmacies (all in Nagpur, all APPROVED)
-- 30 Medicines (5 per pharmacy)
+- 270 Medicines (45 unique medicines across 10 categories, each available in all 6 pharmacies)
+  - Pain Relief: Dolo 650, Crocin, Combiflam, Brufen, Disprin
+  - Cold & Flu: Vicks, Sinarest, Benadryl, Halls, Chericof
+  - Diabetes Care: Glycomet, Glimestar, Januvia, Lantus
+  - Heart Care: Ecosprin, Telma, Amlokind, Atorva
+  - Antibiotics: Augmentin, Azithral, Ciprofloxacin, Cefixime
+  - Vitamins: Becosules, Shelcal, Revital, Neurobion, Zincovit
+  - Digestive: Pantoprazole, Eno, Digene, Isabgol, Cremaffin
+  - Skin Care: Betnovate, Clotrimazole, Lacto Calamine, Acnemoist
+  - Baby Care: Gripe Water, Calpol, Dentogel, Cerelac
+  - Personal Care: Dettol, Savlon, Band-Aid, Moov
 - 1 Sample review
 
 ---
@@ -115,9 +141,9 @@ SELECT businessName, rating, totalOrders FROM pharmacies ORDER BY rating DESC;
 
 -- Check medicines
 SELECT name, price, COUNT(*) OVER (PARTITION BY name) as pharmacy_count
-FROM medicines
-WHERE name LIKE '%Metformin%';
--- Expected: Metformin available in 6 pharmacies
+FROM "Medicine"
+WHERE name LIKE '%Dolo%';
+-- Expected: Dolo 650 Tablet available in 6 pharmacies with varying prices
 
 -- Check users by role
 SELECT role, COUNT(*) FROM users GROUP BY role;
@@ -153,11 +179,12 @@ Then run `002_seed_data.sql` again.
 
 ## 📁 Migration Files
 
-All SQL files are in the `migrations/` folder:
+All SQL files are in the project:
 
-- **`001_init.sql`** - Database schema (991 lines)
-- **`002_seed_data.sql`** - Seed data (400+ lines)
-- **`README.md`** - Detailed documentation
+- **`migrations/001_init.sql`** - Database schema (991 lines)
+- **`migrations/002_seed_data.sql`** - Seed data (400+ lines)
+- **`prisma/migrations/004_seed_medicines.sql`** - Common medicines seed (NEW)
+- **`migrations/README.md`** - Detailed documentation
 
 ---
 
