@@ -36,10 +36,46 @@ interface Product {
   };
 }
 
+// Fallback mock data for when database is not available
+const MOCK_PRODUCTS: Record<string, Product[]> = {
+  medication: [
+    { id: 'med-1', name: 'Metformin 500mg', price: 85, mrp: 120, category: 'medicine', strength: '500mg', manufacturer: 'Sun Pharma', pharmacy: { id: '1', businessName: 'Hope Pharmacy' } },
+    { id: 'med-2', name: 'Amlodipine 5mg', price: 45, mrp: 60, category: 'medicine', strength: '5mg', manufacturer: 'Cipla', pharmacy: { id: '2', businessName: 'Apollo Pharmacy' } },
+    { id: 'med-3', name: 'Paracetamol 650mg', price: 12, mrp: 18, category: 'medicine', strength: '650mg', manufacturer: 'Dr. Reddy\'s', pharmacy: { id: '3', businessName: 'MedPlus' } },
+    { id: 'med-4', name: 'Insulin Glargine', price: 1850, mrp: 2200, category: 'medicine', strength: '100IU/ml', manufacturer: 'Sanofi', pharmacy: { id: '1', businessName: 'Hope Pharmacy' } },
+  ],
+  healthcare: [
+    { id: 'hc-1', name: 'Blood Pressure Monitor', price: 1250, mrp: 1500, category: 'healthcare', manufacturer: 'Omron', pharmacy: { id: '2', businessName: 'Apollo Pharmacy' } },
+    { id: 'hc-2', name: 'Digital Thermometer', price: 280, mrp: 350, category: 'healthcare', manufacturer: 'Dr. Morepen', pharmacy: { id: '3', businessName: 'MedPlus' } },
+    { id: 'hc-3', name: 'Pulse Oximeter', price: 1450, mrp: 1800, category: 'healthcare', manufacturer: 'Beurer', pharmacy: { id: '1', businessName: 'Hope Pharmacy' } },
+  ],
+  'personal-care': [
+    { id: 'pc-1', name: 'Cetaphil Gentle Cleanser', price: 485, mrp: 550, category: 'personal-care', strength: '250ml', manufacturer: 'Galderma', pharmacy: { id: '2', businessName: 'Apollo Pharmacy' } },
+    { id: 'pc-2', name: 'Nivea Soft Cream', price: 165, mrp: 195, category: 'personal-care', strength: '100ml', manufacturer: 'Nivea', pharmacy: { id: '3', businessName: 'MedPlus' } },
+    { id: 'pc-3', name: 'Johnson\'s Baby Oil', price: 125, mrp: 145, category: 'personal-care', strength: '200ml', manufacturer: 'Johnson & Johnson', pharmacy: { id: '1', businessName: 'Hope Pharmacy' } },
+  ],
+  'baby-care': [
+    { id: 'bc-1', name: 'Pampers Diapers', price: 850, mrp: 999, category: 'baby-care', strength: 'Medium (46 pcs)', manufacturer: 'Procter & Gamble', pharmacy: { id: '2', businessName: 'Apollo Pharmacy' } },
+    { id: 'bc-2', name: 'Cerelac Stage 1', price: 285, mrp: 325, category: 'baby-care', strength: '300g', manufacturer: 'Nestle', pharmacy: { id: '3', businessName: 'MedPlus' } },
+    { id: 'bc-3', name: 'Johnson\'s Baby Powder', price: 145, mrp: 175, category: 'baby-care', strength: '200g', manufacturer: 'Johnson & Johnson', pharmacy: { id: '1', businessName: 'Hope Pharmacy' } },
+  ],
+  diabetes: [
+    { id: 'db-1', name: 'Glucometer with Strips', price: 1150, mrp: 1400, category: 'diabetes', manufacturer: 'Accu-Chek', pharmacy: { id: '2', businessName: 'Apollo Pharmacy' } },
+    { id: 'db-2', name: 'Diabetic Protein Powder', price: 850, mrp: 999, category: 'diabetes', strength: '400g', manufacturer: 'Ensure', pharmacy: { id: '3', businessName: 'MedPlus' } },
+    { id: 'db-3', name: 'Sugar Free Gold', price: 95, mrp: 120, category: 'diabetes', strength: '100 pellets', manufacturer: 'Zydus Wellness', pharmacy: { id: '1', businessName: 'Hope Pharmacy' } },
+  ],
+  ayurveda: [
+    { id: 'ay-1', name: 'Chyawanprash', price: 285, mrp: 350, category: 'ayurveda', strength: '500g', manufacturer: 'Dabur', pharmacy: { id: '2', businessName: 'Apollo Pharmacy' } },
+    { id: 'ay-2', name: 'Ashwagandha Capsules', price: 425, mrp: 500, category: 'ayurveda', strength: '60 capsules', manufacturer: 'Himalaya', pharmacy: { id: '3', businessName: 'MedPlus' } },
+    { id: 'ay-3', name: 'Triphala Churna', price: 125, mrp: 150, category: 'ayurveda', strength: '100g', manufacturer: 'Patanjali', pharmacy: { id: '1', businessName: 'Hope Pharmacy' } },
+  ],
+};
+
 export function CategoryTabs() {
   const [activeCategory, setActiveCategory] = useState('medication');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [useFallback, setUseFallback] = useState(false);
 
   useEffect(() => {
     fetchProducts(activeCategory);
@@ -51,13 +87,24 @@ export function CategoryTabs() {
       const response = await fetch(`/api/products/by-category?category=${category}`);
       if (response.ok) {
         const data = await response.json();
-        setProducts(data.products || []);
+        if (data.products && data.products.length > 0) {
+          setProducts(data.products);
+          setUseFallback(false);
+        } else {
+          // Use mock data if database returns empty
+          setProducts(MOCK_PRODUCTS[category] || []);
+          setUseFallback(true);
+        }
       } else {
-        setProducts([]);
+        // Use mock data on API error
+        setProducts(MOCK_PRODUCTS[category] || []);
+        setUseFallback(true);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
-      setProducts([]);
+      // Use mock data on network error
+      setProducts(MOCK_PRODUCTS[category] || []);
+      setUseFallback(true);
     } finally {
       setLoading(false);
     }
@@ -69,6 +116,21 @@ export function CategoryTabs() {
         <h2 className="text-3xl font-bold text-gray-900 mb-8">
           Shop by Category
         </h2>
+
+        {/* Database Info Banner */}
+        {useFallback && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+            <span className="material-icons text-blue-600 mt-0.5">info</span>
+            <div className="flex-1">
+              <p className="text-sm text-blue-900">
+                <strong>Showing sample products.</strong> To see live data from pharmacies, run the database migrations in Supabase SQL Editor.
+              </p>
+              <p className="text-xs text-blue-700 mt-1">
+                See <code className="bg-blue-100 px-1 rounded">RUN_MIGRATIONS.md</code> for instructions.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Category Tabs */}
         <div className="mb-8 overflow-x-auto scrollbar-hide">
