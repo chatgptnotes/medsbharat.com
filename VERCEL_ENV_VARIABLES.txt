@@ -1,0 +1,54 @@
+=== VERCEL ENVIRONMENT VARIABLES ===
+Copy these EXACT values into Vercel Dashboard
+
+Project: medsbharat
+Date: December 31, 2024
+
+==============================================
+
+DATABASE_URL
+postgresql://postgres.hcacdavejbbzqzqjoqbp:Chindwada%401@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1
+
+==============================================
+
+DIRECT_DATABASE_URL
+postgresql://postgres.hcacdavejbbzqzqjoqbp:Chindwada%401@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
+
+==============================================
+
+NEXT_PUBLIC_SUPABASE_URL
+https://hcacdavejbbzqzqjoqbp.supabase.co
+
+==============================================
+
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjYWNkYXZlamJienF6cWpvcWJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxNjA3OTcsImV4cCI6MjA4MjczNjc5N30.NJx6EUhhU8wKo_eKQphvduYGtfTngN4qfqwmL8x3AKk
+
+==============================================
+
+SUPABASE_SERVICE_ROLE_KEY
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjYWNkYXZlamJienF6cWpvcWJwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzE2MDc5NywiZXhwIjoyMDgyNzM2Nzk3fQ.cULgvjB6DQZsx6PZD0RVdy9eNMDlNgrswLoq2r4EbRE
+
+==============================================
+
+NEXTAUTH_SECRET
+nOEeEuEST0c9Gk8c+f+6chVCDt/BNhTv7BM3pEnMdis=
+
+==============================================
+
+NEXTAUTH_URL
+https://medsbharat.vercel.app
+
+==============================================
+
+INSTRUCTIONS:
+
+1. Go to: https://vercel.com/new
+2. Import: chatgptnotes/medsbharat.com
+3. Click "Environment Variables"
+4. Add each variable above (name on one line, value below it)
+5. Click "Deploy"
+
+After deployment, update NEXTAUTH_URL if Vercel assigns different domain.
+
+==============================================
