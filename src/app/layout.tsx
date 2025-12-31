@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import Header from "@/components/layout/Header"
 import Footer from "@/components/layout/Footer"
+import { FloatingCartButton } from "@/components/cart/FloatingCartButton"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -44,11 +45,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link
+          href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet"
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased bg-gray-50`}>
         <div className="flex flex-col min-h-screen">
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          <FloatingCartButton />
         </div>
       </body>
     </html>

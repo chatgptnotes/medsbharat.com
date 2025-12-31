@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice, calculateDiscount } from '@/lib/utils'
-import { useCartStore } from '@/store/cartStore'
+import { useCartStore } from '@/store/cart'
 import type { Medicine } from '@/types/pharmacy'
 
 interface MedicineCardProps {
@@ -19,8 +19,9 @@ interface MedicineCardProps {
 }
 
 export function MedicineCard({ medicine }: MedicineCardProps) {
-  const { addItem, getItemCount, updateQuantity } = useCartStore()
-  const itemCount = getItemCount(medicine.id)
+  const { addItem, items, updateQuantity } = useCartStore()
+  const cartItem = items.find(item => item.id === medicine.id)
+  const itemCount = cartItem?.quantity || 0
 
   const discount = medicine.mrp ? calculateDiscount(medicine.mrp, medicine.price) : 0
 
@@ -28,13 +29,14 @@ export function MedicineCard({ medicine }: MedicineCardProps) {
     if (!medicine.pharmacy) return
 
     addItem({
-      medicineId: medicine.id,
-      medicineName: medicine.name,
-      pharmacyId: medicine.pharmacy.id,
-      pharmacyName: medicine.pharmacy.businessName,
+      id: medicine.id,
+      name: medicine.name,
       price: medicine.price,
       mrp: medicine.mrp,
-      quantity: 1,
+      pharmacyId: medicine.pharmacy.id,
+      pharmacyName: medicine.pharmacy.businessName,
+      strength: medicine.strength,
+      manufacturer: medicine.manufacturer,
     })
   }
 
