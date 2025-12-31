@@ -48,18 +48,28 @@ export function MedicineCard({ medicine }: MedicineCardProps) {
   }
 
   const handleAddToCart = () => {
-    if (!medicine.pharmacy) return
+    if (!medicine.pharmacy) {
+      console.error('No pharmacy data available for medicine:', medicine)
+      alert('Unable to add to cart. Please try again.')
+      return
+    }
 
-    addItem({
-      id: medicine.id,
-      name: medicine.name,
-      price: medicine.price,
-      mrp: medicine.mrp,
-      pharmacyId: medicine.pharmacy.id,
-      pharmacyName: medicine.pharmacy.businessName,
-      strength: medicine.strength,
-      manufacturer: medicine.manufacturer,
-    })
+    try {
+      addItem({
+        id: medicine.id,
+        name: medicine.name,
+        price: medicine.price,
+        mrp: medicine.mrp,
+        pharmacyId: medicine.pharmacy.id,
+        pharmacyName: medicine.pharmacy.businessName,
+        strength: medicine.strength,
+        manufacturer: medicine.manufacturer,
+      })
+      console.log('Item added to cart:', medicine.name)
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+      alert('Failed to add item to cart. Please try again.')
+    }
   }
 
   return (
