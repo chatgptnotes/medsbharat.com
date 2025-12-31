@@ -21,6 +21,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CategoryTabs } from "@/components/homepage/CategoryTabs"
 import { RecentlyViewed } from "@/components/patient/RecentlyViewed"
+import SearchAutocomplete from "@/components/SearchAutocomplete"
 
 // Category data
 const categories = [
@@ -131,6 +132,12 @@ export default function HomePage() {
                 Order genuine medicines online and get them delivered anywhere in India.
                 Upload your prescription and we&apos;ll take care of the rest. Serving Bharat with quality healthcare.
               </p>
+
+              {/* Search Bar with Autocomplete */}
+              <div className="mb-6">
+                <SearchAutocomplete placeholder="Search for medicines or pharmacies..." />
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/upload-prescription">
                   <Button size="lg" className="w-full sm:w-auto">
