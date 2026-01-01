@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, History, TrendingUp, X } from 'lucide-react'
+import { Search, History, TrendingUp, X, Check, XCircle } from 'lucide-react'
 
 interface AutocompleteResult {
   id: string
@@ -10,6 +10,8 @@ interface AutocompleteResult {
   type: 'medicine' | 'pharmacy' | 'recent' | 'trending'
   subtitle?: string
   category?: string
+  available?: boolean
+  price?: number | null
 }
 
 interface SearchAutocompleteProps {
@@ -70,9 +72,11 @@ export default function SearchAutocomplete({
       }
 
       try {
+        console.log('Fetching autocomplete for:', query)
         const response = await fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`)
 
         if (!response.ok) {
+          console.log('API response not ok:', response.status)
           // If API fails, use mock data
           const mockSuggestions = getMockSuggestions(query)
           setSuggestions(mockSuggestions)
@@ -80,6 +84,7 @@ export default function SearchAutocomplete({
         }
 
         const data = await response.json()
+        console.log('API returned:', data)
         setSuggestions(data.suggestions || [])
       } catch (error) {
         console.error('Autocomplete error:', error)
@@ -115,16 +120,16 @@ export default function SearchAutocomplete({
   // Mock suggestions for development
   const getMockSuggestions = (q: string): AutocompleteResult[] => {
     const medicines = [
-      { name: 'Dolo 650 Tablet', category: 'Pain Relief', manufacturer: 'Micro Labs' },
-      { name: 'Paracetamol 500mg', category: 'Pain Relief', manufacturer: 'Generic' },
-      { name: 'Azithromycin 500mg', category: 'Antibiotic', manufacturer: 'Cipla' },
-      { name: 'Crocin Advance', category: 'Pain Relief', manufacturer: 'GSK' },
-      { name: 'Amoxicillin 250mg', category: 'Antibiotic', manufacturer: 'Ranbaxy' },
-      { name: 'Cetirizine 10mg', category: 'Allergy', manufacturer: 'Cipla' },
-      { name: 'Pantoprazole 40mg', category: 'Digestive', manufacturer: 'Sun Pharma' },
-      { name: 'Metformin 500mg', category: 'Diabetes', manufacturer: 'USV' },
-      { name: 'Atorvastatin 10mg', category: 'Heart Care', manufacturer: 'Pfizer' },
-      { name: 'Vitamin D3 60K', category: 'Vitamins', manufacturer: 'Mankind' },
+      { name: 'Dolo 650 Tablet', category: 'Pain Relief', manufacturer: 'Micro Labs', available: true, price: 35 },
+      { name: 'Paracetamol 500mg', category: 'Pain Relief', manufacturer: 'Generic', available: true, price: 25 },
+      { name: 'Azithromycin 500mg', category: 'Antibiotic', manufacturer: 'Cipla', available: true, price: 120 },
+      { name: 'Crocin Advance', category: 'Pain Relief', manufacturer: 'GSK', available: false, price: 45 },
+      { name: 'Amoxicillin 250mg', category: 'Antibiotic', manufacturer: 'Ranbaxy', available: true, price: 85 },
+      { name: 'Cetirizine 10mg', category: 'Allergy', manufacturer: 'Cipla', available: true, price: 30 },
+      { name: 'Pantoprazole 40mg', category: 'Digestive', manufacturer: 'Sun Pharma', available: false, price: 95 },
+      { name: 'Metformin 500mg', category: 'Diabetes', manufacturer: 'USV', available: true, price: 55 },
+      { name: 'Atorvastatin 10mg', category: 'Heart Care', manufacturer: 'Pfizer', available: true, price: 75 },
+      { name: 'Vitamin D3 60K', category: 'Vitamins', manufacturer: 'Mankind', available: true, price: 150 },
     ]
 
     const pharmacies = [
@@ -142,8 +147,10 @@ export default function SearchAutocomplete({
           id: `m${idx}`,
           name: med.name,
           type: 'medicine',
-          subtitle: `${med.manufacturer} • ${med.category}`,
+          subtitle: `${med.manufacturer} | ${med.category}`,
           category: med.category,
+          available: med.available,
+          price: med.price,
         })
       }
     })
@@ -156,6 +163,7 @@ export default function SearchAutocomplete({
           name: pharm.name,
           type: 'pharmacy',
           subtitle: pharm.subtitle,
+          available: true,
         })
       }
     })
@@ -296,7 +304,7 @@ export default function SearchAutocomplete({
               onClick={() => handleSelect(item)}
               className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
                 selectedIndex === index ? 'bg-blue-50' : ''
-              }`}
+              } ${item.type === 'medicine' && item.available === false ? 'opacity-60' : ''}`}
               role="option"
               aria-selected={selectedIndex === index}
             >
@@ -321,6 +329,27 @@ export default function SearchAutocomplete({
                 <div className="font-medium text-gray-900 truncate">{item.name}</div>
                 {item.subtitle && (
                   <div className="text-sm text-gray-500 truncate mt-0.5">{item.subtitle}</div>
+                )}
+                {/* Availability Status for Medicines */}
+                {item.type === 'medicine' && (
+                  <div className="flex items-center gap-2 mt-1">
+                    {item.available ? (
+                      <span className="inline-flex items-center text-xs text-green-600">
+                        <Check className="h-3 w-3 mr-1" />
+                        In Stock
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center text-xs text-red-500">
+                        <XCircle className="h-3 w-3 mr-1" />
+                        Out of Stock
+                      </span>
+                    )}
+                    {item.available && item.price && (
+                      <span className="text-xs font-semibold text-orange-600">
+                        Rs. {item.price.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
 

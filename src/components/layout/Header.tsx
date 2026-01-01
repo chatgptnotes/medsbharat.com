@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import {
-  Search,
   ShoppingCart,
   User,
   Menu,
@@ -14,8 +13,8 @@ import {
   Package
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { useCartStore } from "@/store/cart"
+import SearchAutocomplete from "@/components/SearchAutocomplete"
 
 const categories = [
   { name: "Medicines", href: "/products?category=medicines" },
@@ -29,7 +28,6 @@ const categories = [
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { getTotalItems } = useCartStore()
 
@@ -52,13 +50,6 @@ export default function Header() {
       }
     }
   }, [isCategoryDropdownOpen])
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`
-    }
-  }
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -108,26 +99,9 @@ export default function Header() {
           </Link>
 
           {/* Search Bar */}
-          <form
-            onSubmit={handleSearch}
-            className="hidden md:flex flex-1 max-w-2xl"
-          >
-            <div className="relative w-full">
-              <Input
-                type="text"
-                placeholder="Search for medicines, healthcare products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-12"
-              />
-              <button
-                type="submit"
-                className="absolute right-0 top-0 h-full px-4 text-gray-400 hover:text-orange-500"
-              >
-                <Search className="h-5 w-5" />
-              </button>
-            </div>
-          </form>
+          <div className="hidden md:block flex-1 max-w-2xl">
+            <SearchAutocomplete placeholder="Search for medicines, healthcare products..." />
+          </div>
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 md:gap-4">
@@ -181,23 +155,9 @@ export default function Header() {
         </div>
 
         {/* Mobile Search */}
-        <form onSubmit={handleSearch} className="mt-4 md:hidden">
-          <div className="relative">
-            <Input
-              type="text"
-              placeholder="Search medicines..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pr-12"
-            />
-            <button
-              type="submit"
-              className="absolute right-0 top-0 h-full px-4 text-gray-400"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-          </div>
-        </form>
+        <div className="mt-4 md:hidden">
+          <SearchAutocomplete placeholder="Search medicines..." />
+        </div>
       </div>
 
       {/* Categories Navigation */}

@@ -18,23 +18,24 @@ export async function GET(request: NextRequest) {
 
     const userLocation = lat && lon ? { lat: parseFloat(lat), lon: parseFloat(lon) } : null
 
-    // Search medicines across all pharmacies
+    // Search medicines across all pharmacies (using Medicine table)
     if (type === 'medicine' || !type) {
       const { data: medicines, error } = await supabase
-        .from('medicines')
+        .from('Medicine')
         .select(`
           id,
           name,
-          genericName,
           manufacturer,
           category,
-          strength,
+          description,
+          packSize,
           price,
           mrp,
-          available,
-          orderCount,
+          discountPercent,
+          inStock,
+          stockQuantity,
           pharmacyId,
-          pharmacy:pharmacies (
+          pharmacy:Pharmacy (
             id,
             businessName,
             rating,
@@ -45,8 +46,7 @@ export async function GET(request: NextRequest) {
           )
         `)
         .ilike('name', `%${query}%`)
-        .eq('available', true)
-        .order('orderCount', { ascending: false })
+        .eq('inStock', true)
         .order('price', { ascending: true })
         .limit(50)
 

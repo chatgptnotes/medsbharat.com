@@ -13,24 +13,30 @@ export async function GET(request: Request) {
     }
 
     const searchTerm = query.trim()
+    console.log('Autocomplete search term:', searchTerm)
 
-    // Search medicines
-    const { data: medicines } = await supabase
-      .from('medicines')
-      .select('id, name, manufacturer, category')
-      .or(`name.ilike.%${searchTerm}%,manufacturer.ilike.%${searchTerm}%,category.ilike.%${searchTerm}%`)
-      .eq('available', true)
-      .order('orderCount', { ascending: false })
-      .limit(8)
+    // Search medicines from Medicine table (show all, including unavailable)
+    const { data: medicines, error: medicinesError } = await supabase
+      .from('Medicine')
+      .select('id, name, manufacturer, category, "inStock", price')
+      .ilike('name', `%${searchTerm}%`)
+      .limit(15)
+
+    console.log('Medicines query result:', { count: medicines?.length, error: medicinesError })
+    if (medicinesError) {
+      console.error('Medicines query error:', medicinesError)
+    }
 
     // Search pharmacies
-    const { data: pharmacies } = await supabase
+    const { data: pharmacies, error: pharmaciesError } = await supabase
       .from('pharmacies')
       .select('id, businessName, address')
       .ilike('businessName', `%${searchTerm}%`)
-      .eq('status', 'APPROVED')
+      .eq('status', 'ACTIVE')
       .order('rating', { ascending: false })
       .limit(5)
+
+    console.log('Pharmacies query result:', { count: pharmacies?.length, error: pharmaciesError })
 
     // Format results
     const suggestions = [
@@ -38,17 +44,22 @@ export async function GET(request: Request) {
         id: med.id,
         name: med.name,
         type: 'medicine' as const,
-        subtitle: `${med.manufacturer} • ${med.category}`,
+        subtitle: `${med.manufacturer || 'Generic'} | ${med.category || 'Medicine'}`,
         category: med.category,
+        available: med.inStock,
+        price: med.price,
       })),
       ...(pharmacies || []).map((pharm: any) => ({
         id: pharm.id,
         name: pharm.businessName,
         type: 'pharmacy' as const,
         subtitle: pharm.address,
+        available: true,
+        price: null,
       })),
     ]
 
+    console.log('Returning suggestions:', suggestions.length)
     return NextResponse.json({
       suggestions,
       total: suggestions.length,

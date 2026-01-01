@@ -19,20 +19,21 @@ export function DealOfTheDay() {
       try {
         // Get a random medicine with highest discount
         const { data: medicines } = await supabase
-          .from('medicines')
+          .from('Medicine')
           .select(`
             id,
             name,
             price,
             manufacturer,
             category,
-            strength,
-            genericName,
+            packSize,
+            description,
             mrp,
-            available,
-            pharmacy:pharmacies!inner(id, businessName)
+            inStock,
+            discountPercent,
+            pharmacy:Pharmacy!inner(id, businessName)
           `)
-          .eq('available', true)
+          .eq('inStock', true)
           .order('mrp', { ascending: false })
           .limit(10)
 
