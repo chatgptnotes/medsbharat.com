@@ -65,16 +65,21 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 flex-shrink-0" />
-                <span>1800-XXX-XXXX</span>
+                <a href="tel:+918412030400" className="hover:text-orange-500 transition-colors">
+                  +91 84120 30400
+                </a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 flex-shrink-0" />
-                <span>support@medsbharat.com</span>
+                <a href="mailto:support@medsbharat.com" className="hover:text-orange-500 transition-colors">
+                  support@medsbharat.com
+                </a>
               </li>
             </ul>
             <div className="mt-4">
-              <p className="text-xs text-gray-500">Customer Support</p>
+              <p className="text-xs text-gray-500">Customer Support - Hope Pharmacy</p>
               <p className="text-sm font-semibold text-white">Mon-Sun: 8AM - 10PM</p>
+              <p className="text-xs text-gray-400 mt-1">Operated by Hope Pharmacy, Nagpur</p>
             </div>
           </div>
         </div>

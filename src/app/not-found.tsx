@@ -70,13 +70,13 @@ export default function NotFound() {
 
         {/* Support Text */}
         <p className="text-sm text-gray-500 mt-8">
-          Need assistance? Contact us at{' '}
+          Need assistance? Contact Hope Pharmacy at{' '}
           <a href="mailto:support@medsbharat.com" className="text-blue-600 hover:underline">
             support@medsbharat.com
           </a>{' '}
           or call{' '}
-          <a href="tel:1800-XXX-XXXX" className="text-blue-600 hover:underline">
-            1800-XXX-XXXX
+          <a href="tel:+918412030400" className="text-blue-600 hover:underline">
+            +91 84120 30400
           </a>
         </p>
       </div>
