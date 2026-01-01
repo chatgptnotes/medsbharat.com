@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
         name,
         email,
         phone,
-        password: hashedPassword,
-        role: 'USER',
+        passwordHash: hashedPassword,
+        role: 'PATIENT',
       },
       select: {
         id: true,
@@ -76,10 +76,19 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     )
-  } catch (error) {
+  } catch (error: any) {
     console.error('Registration error:', error)
+    console.error('Error message:', error?.message)
+    console.error('Error stack:', error?.stack)
+    console.error('Error name:', error?.name)
+
+    // In production, log detailed error but return generic message
+    const errorMessage = process.env.NODE_ENV === 'development'
+      ? error?.message || 'An error occurred during registration'
+      : 'An error occurred during registration. Please try again.'
+
     return NextResponse.json(
-      { error: 'An error occurred during registration. Please try again.' },
+      { error: errorMessage, details: process.env.NODE_ENV === 'development' ? error?.message : undefined },
       { status: 500 }
     )
   }

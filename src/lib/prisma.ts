@@ -5,9 +5,15 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
-  // Use standard Prisma Client with binary engine
-  // No need for PG adapter - Supabase works fine with standard connection
+  // Explicitly provide DATABASE_URL at runtime to avoid build-time issues
+  const databaseUrl = process.env.DATABASE_URL || process.env.DIRECT_DATABASE_URL
+
   return new PrismaClient({
+    datasources: {
+      db: {
+        url: databaseUrl
+      }
+    },
     log: process.env.NODE_ENV === 'development' ? ['error'] : ['error'],
   })
 }

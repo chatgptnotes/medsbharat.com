@@ -5,14 +5,16 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { User, Mail, Lock, Phone, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
+import { User, Mail, Lock, Phone, Loader2, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
+import { countryCodes } from '@/lib/countryCodes'
 
 function SignupForm() {
   const router = useRouter()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    countryCode: '+91',
     phone: '',
     password: '',
     confirmPassword: '',
@@ -20,6 +22,8 @@ function SignupForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -55,7 +59,7 @@ function SignupForm() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          phone: formData.phone,
+          phone: `${formData.countryCode}${formData.phone}`,
           password: formData.password,
         }),
       })
@@ -162,19 +166,38 @@ function SignupForm() {
             <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
               Phone Number
             </label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                placeholder="+91 98765 43210"
-                value={formData.phone}
-                onChange={handleChange}
-                className="pl-10"
-                required
-                disabled={isLoading}
-              />
+            <div className="flex gap-2">
+              <div className="relative w-32">
+                <select
+                  value={formData.countryCode}
+                  onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                  className="w-full h-10 px-3 pr-8 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                  disabled={isLoading}
+                >
+                  {countryCodes.map((country) => (
+                    <option key={country.code} value={country.dialCode}>
+                      {country.flag} {country.dialCode}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-icons absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
+                  arrow_drop_down
+                </span>
+              </div>
+              <div className="relative flex-1">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="98765 43210"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="pl-10"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
             </div>
           </div>
 
@@ -187,15 +210,27 @@ function SignupForm() {
               <Input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Minimum 6 characters"
                 value={formData.password}
                 onChange={handleChange}
-                className="pl-10"
+                className="pl-10 pr-10"
                 required
                 disabled={isLoading}
                 minLength={6}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                disabled={isLoading}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -208,15 +243,27 @@ function SignupForm() {
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Re-enter your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="pl-10"
+                className="pl-10 pr-10"
                 required
                 disabled={isLoading}
                 minLength={6}
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                disabled={isLoading}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
             </div>
           </div>
 
