@@ -29,6 +29,10 @@ export const metadata: Metadata = {
     "meds bharat",
   ],
   authors: [{ name: "MedsBharat" }],
+  icons: {
+    icon: '/icon',
+    apple: '/apple-icon',
+  },
   openGraph: {
     title: "MedsBharat - India's Trusted Online Pharmacy",
     description:
