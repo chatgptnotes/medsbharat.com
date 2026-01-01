@@ -96,7 +96,7 @@ export function Footer() {
             </div>
           </div>
           <p className="text-xs text-gray-600 mt-4 text-center">
-            Version 2.8 | Last Updated: December 31, 2024 | Repository: chatgptnotes/medsbharat.com
+            Version 2.9 | Last Updated: December 31, 2024 | Repository: chatgptnotes/medsbharat.com
           </p>
         </div>
       </div>
