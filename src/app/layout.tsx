@@ -4,6 +4,7 @@ import "./globals.css"
 import Header from "@/components/layout/Header"
 import { Footer } from "@/components/layout/Footer"
 import { FloatingCartButton } from "@/components/cart/FloatingCartButton"
+import AuthProvider from "@/components/providers/AuthProvider"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -52,12 +53,14 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-gray-50`}>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <FloatingCartButton />
-        </div>
+        <AuthProvider>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <FloatingCartButton />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   )
