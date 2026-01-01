@@ -35,7 +35,22 @@ function LoginForm() {
       if (result?.error) {
         setError('Invalid email or password')
       } else {
-        router.push(callbackUrl)
+        // Fetch session to get user role
+        const response = await fetch('/api/auth/session')
+        const session = await response.json()
+
+        // Role-based redirect
+        if (session?.user?.role === 'SUPER_ADMIN') {
+          router.push('/admin')
+        } else if (session?.user?.role === 'PHARMACY_OWNER' || session?.user?.role === 'PHARMACY_STAFF') {
+          router.push('/pharmacy/dashboard')
+        } else if (session?.user?.role === 'PATIENT') {
+          router.push('/dashboard')
+        } else {
+          // Fallback to callback URL
+          router.push(callbackUrl)
+        }
+
         router.refresh()
       }
     } catch (err) {

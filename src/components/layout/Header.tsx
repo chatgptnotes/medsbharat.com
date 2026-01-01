@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
+import { useSession, signOut } from "next-auth/react"
 import {
   Search,
   ShoppingCart,
@@ -12,7 +13,9 @@ import {
   ChevronDown,
   Heart,
   Package,
-  Phone
+  Phone,
+  LogOut,
+  Settings
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,12 +33,14 @@ const categories = [
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const userDropdownRef = useRef<HTMLDivElement>(null)
   const { getTotalItems } = useCartStore()
+  const { data: session } = useSession()
 
-  // TODO: Replace with actual auth state
-  const isLoggedIn = false
+  const isLoggedIn = !!session?.user
   const cartItemCount = getTotalItems()
 
   // Close dropdown when clicking outside
@@ -44,15 +49,18 @@ export default function Header() {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsCategoryDropdownOpen(false)
       }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setIsUserDropdownOpen(false)
+      }
     }
 
-    if (isCategoryDropdownOpen) {
+    if (isCategoryDropdownOpen || isUserDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside)
       return () => {
         document.removeEventListener("mousedown", handleClickOutside)
       }
     }
-  }, [isCategoryDropdownOpen])
+  }, [isCategoryDropdownOpen, isUserDropdownOpen])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -136,29 +144,69 @@ export default function Header() {
           {/* Right Actions */}
           <div className="flex items-center gap-2 md:gap-4">
             {isLoggedIn ? (
-              <>
-                <Link
-                  href="/dashboard/orders"
-                  className="hidden md:flex items-center gap-1 text-gray-700 hover:text-orange-500"
-                >
-                  <Package className="h-5 w-5" />
-                  <span className="text-sm">Orders</span>
-                </Link>
-                <Link
-                  href="/wishlist"
-                  className="hidden md:flex items-center gap-1 text-gray-700 hover:text-orange-500"
-                >
-                  <Heart className="h-5 w-5" />
-                  <span className="text-sm">Wishlist</span>
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-1 text-gray-700 hover:text-orange-500"
+              <div className="relative" ref={userDropdownRef}>
+                <button
+                  onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                  className="flex items-center gap-2 text-gray-700 hover:text-orange-500 transition-colors"
                 >
                   <User className="h-5 w-5" />
-                  <span className="hidden md:inline text-sm">Account</span>
-                </Link>
-              </>
+                  <span className="hidden md:inline text-sm font-medium">{session?.user?.name || 'Account'}</span>
+                  <ChevronDown className={`h-4 w-4 hidden md:block transition-transform ${isUserDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* User Dropdown Menu */}
+                {isUserDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{session?.user?.name}</p>
+                      <p className="text-xs text-gray-500">{session?.user?.email}</p>
+                      {session?.user?.role && (
+                        <span className="inline-block mt-1 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">
+                          {session.user.role}
+                        </span>
+                      )}
+                    </div>
+                    <div className="py-2">
+                      {session?.user?.role === 'SUPER_ADMIN' && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors"
+                        >
+                          <Settings className="h-4 w-4" />
+                          <span>Admin Dashboard</span>
+                        </Link>
+                      )}
+                      <Link
+                        href="/dashboard/orders"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors"
+                      >
+                        <Package className="h-4 w-4" />
+                        <span>My Orders</span>
+                      </Link>
+                      <Link
+                        href="/wishlist"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors"
+                      >
+                        <Heart className="h-4 w-4" />
+                        <span>Wishlist</span>
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setIsUserDropdownOpen(false)
+                          signOut({ callbackUrl: '/' })
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link href="/login">
                 <Button variant="outline" size="sm" className="hidden md:flex">
