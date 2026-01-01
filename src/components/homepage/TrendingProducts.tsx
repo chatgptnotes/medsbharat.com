@@ -13,22 +13,22 @@ export function TrendingProducts() {
     async function fetchTrending() {
       try {
         const { data: medicines } = await supabase
-          .from('medicines')
+          .from('Medicine')
           .select(`
             id,
             name,
             price,
             manufacturer,
             category,
-            strength,
-            genericName,
+            packSize,
+            description,
             mrp,
-            available,
-            orderCount,
-            pharmacy:pharmacies!inner(id, businessName)
+            inStock,
+            discountPercent,
+            pharmacy:Pharmacy!inner(id, businessName)
           `)
-          .eq('available', true)
-          .order('orderCount', { ascending: false })
+          .eq('inStock', true)
+          .order('price', { ascending: true })
           .limit(6)
 
         if (medicines && medicines.length > 0) {

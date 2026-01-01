@@ -13,21 +13,22 @@ export function NewArrivals() {
     async function fetchNewArrivals() {
       try {
         const { data: medicines } = await supabase
-          .from('medicines')
+          .from('Medicine')
           .select(`
             id,
             name,
             price,
             manufacturer,
             category,
-            strength,
-            genericName,
+            packSize,
+            description,
             mrp,
-            available,
+            inStock,
+            discountPercent,
             createdAt,
-            pharmacy:pharmacies!inner(id, businessName)
+            pharmacy:Pharmacy!inner(id, businessName)
           `)
-          .eq('available', true)
+          .eq('inStock', true)
           .order('createdAt', { ascending: false })
           .limit(6)
 

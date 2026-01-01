@@ -1,15 +1,36 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, X, FileText, Image as ImageIcon, Check, AlertCircle } from 'lucide-react';
+import { Upload, X, FileText, Check, AlertCircle, Search, ShoppingCart, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { useCartStore } from '@/store/cart';
+import type { ParsedMedicine } from '@/lib/medicine-parser';
 
 interface UploadedFile {
   file: File;
   preview: string;
   id: string;
+  url?: string;
+}
+
+interface MatchedMedicine {
+  id: string;
+  name: string;
+  price: number;
+  manufacturer: string;
+  pharmacyId: string;
+  pharmacyName: string;
+  available: boolean;
+}
+
+interface OCRResult {
+  success: boolean;
+  medicines: ParsedMedicine[];
+  matchedMedicines: MatchedMedicine[];
+  rawText: string;
+  confidence: number;
 }
 
 export default function UploadPrescriptionPage() {
@@ -19,10 +40,17 @@ export default function UploadPrescriptionPage() {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [error, setError] = useState('');
 
+  // OCR states
+  const [extracting, setExtracting] = useState(false);
+  const [ocrResult, setOcrResult] = useState<OCRResult | null>(null);
+  const [addedToCart, setAddedToCart] = useState<Set<string>>(new Set());
+
   // Form fields
   const [patientName, setPatientName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [instructions, setInstructions] = useState('');
+
+  const addItem = useCartStore((state) => state.addItem);
 
   const MAX_FILES = 5;
   const MAX_SIZE = 5 * 1024 * 1024; // 5MB
@@ -54,6 +82,7 @@ export default function UploadPrescriptionPage() {
 
   const handleFiles = (newFiles: File[]) => {
     setError('');
+    setOcrResult(null);
 
     // Check file count
     if (files.length + newFiles.length > MAX_FILES) {
@@ -93,6 +122,81 @@ export default function UploadPrescriptionPage() {
 
   const removeFile = (id: string) => {
     setFiles(files.filter((f) => f.id !== id));
+    setOcrResult(null);
+  };
+
+  const extractMedicines = async (imageUrl: string) => {
+    setExtracting(true);
+    try {
+      const response = await fetch('/api/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl }),
+      });
+
+      const data = await response.json();
+      setOcrResult(data);
+    } catch (err) {
+      console.error('OCR error:', err);
+      setError('Failed to extract medicines from prescription');
+    } finally {
+      setExtracting(false);
+    }
+  };
+
+  const handleUploadAndExtract = async () => {
+    if (files.length === 0) {
+      setError('Please upload at least one prescription');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+
+    try {
+      // Upload first file to Cloudinary
+      const firstFile = files[0];
+      const formData = new FormData();
+      formData.append('file', firstFile.file);
+
+      const response = await fetch('/api/upload-prescription', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      const data = await response.json();
+      const uploadedUrl = data.url;
+
+      // Update file with URL
+      setFiles(prev => prev.map(f =>
+        f.id === firstFile.id ? { ...f, url: uploadedUrl } : f
+      ));
+
+      // Extract medicines from uploaded image
+      await extractMedicines(uploadedUrl);
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError('Failed to upload prescription. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleAddToCart = (medicine: MatchedMedicine) => {
+    addItem({
+      id: medicine.id,
+      name: medicine.name,
+      price: medicine.price,
+      pharmacyId: medicine.pharmacyId,
+      pharmacyName: medicine.pharmacyName,
+      manufacturer: medicine.manufacturer,
+    });
+    setAddedToCart(prev => new Set([...prev, medicine.id]));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,12 +216,17 @@ export default function UploadPrescriptionPage() {
     setError('');
 
     try {
-      // Upload to Cloudinary via API route
+      // Upload remaining files if any
       const uploadedUrls: string[] = [];
 
-      for (const { file } of files) {
+      for (const uploadedFile of files) {
+        if (uploadedFile.url) {
+          uploadedUrls.push(uploadedFile.url);
+          continue;
+        }
+
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', uploadedFile.file);
 
         const response = await fetch('/api/upload-prescription', {
           method: 'POST',
@@ -126,23 +235,23 @@ export default function UploadPrescriptionPage() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || errorData.details || 'Upload failed');
+          throw new Error(errorData.error || 'Upload failed');
         }
 
         const data = await response.json();
         uploadedUrls.push(data.url);
       }
 
-      // Save prescription data to database
+      // Save prescription data
       const prescriptionData = {
         patientName: patientName || 'Not provided',
         contactNumber,
         instructions: instructions || '',
         prescriptionUrls: uploadedUrls,
+        ocrData: ocrResult,
         uploadedAt: new Date().toISOString(),
       };
 
-      // TODO: Call API to save prescription data
       console.log('Prescription data:', prescriptionData);
 
       setUploadSuccess(true);
@@ -153,7 +262,7 @@ export default function UploadPrescriptionPage() {
 
       // Redirect after 3 seconds
       setTimeout(() => {
-        window.location.href = '/products';
+        window.location.href = '/cart';
       }, 3000);
     } catch (err) {
       console.error('Upload error:', err);
@@ -186,8 +295,8 @@ export default function UploadPrescriptionPage() {
                 Upload Prescription
               </h1>
               <p className="text-gray-600">
-                Upload your doctor's prescription and we'll deliver the medicines to your doorstep.
-                Our pharmacists will verify your prescription before processing the order.
+                Upload your doctor's prescription and we'll automatically detect the medicines.
+                You can then add them to your cart.
               </p>
             </div>
           </div>
@@ -203,10 +312,10 @@ export default function UploadPrescriptionPage() {
               Prescription Uploaded Successfully!
             </h2>
             <p className="text-gray-600 mb-6">
-              Thank you! Our pharmacist will review your prescription and contact you shortly.
+              Medicines have been added to your cart. Redirecting...
             </p>
             <p className="text-sm text-gray-500">
-              Redirecting to products page...
+              Redirecting to cart page...
             </p>
           </div>
         ) : (
@@ -291,6 +400,9 @@ export default function UploadPrescriptionPage() {
                           <p className="text-xs text-gray-500">
                             {(uploadedFile.file.size / 1024 / 1024).toFixed(2)} MB
                           </p>
+                          {uploadedFile.url && (
+                            <p className="text-xs text-green-600">Uploaded</p>
+                          )}
                         </div>
                         <button
                           type="button"
@@ -302,9 +414,136 @@ export default function UploadPrescriptionPage() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Extract Medicines Button */}
+                  {!ocrResult && files.some(f => f.preview) && (
+                    <Button
+                      type="button"
+                      onClick={handleUploadAndExtract}
+                      disabled={uploading || extracting}
+                      className="mt-4 bg-blue-600 hover:bg-blue-700"
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : extracting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Extracting Medicines...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="mr-2 h-4 w-4" />
+                          Extract Medicines from Prescription
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
+
+            {/* OCR Results - Extracted Medicines */}
+            {ocrResult && (
+              <div className="bg-white rounded-lg shadow-sm p-6 md:p-8 mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <span className="material-icons text-green-600">medical_services</span>
+                  Extracted Medicines
+                </h2>
+
+                {ocrResult.medicines.length === 0 && ocrResult.matchedMedicines.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <span className="material-icons text-4xl mb-2">search_off</span>
+                    <p>No medicines detected in this prescription.</p>
+                    <p className="text-sm mt-2">
+                      Try uploading a clearer image or search manually.
+                    </p>
+                    <Link href="/search">
+                      <Button variant="outline" className="mt-4">
+                        <Search className="mr-2 h-4 w-4" />
+                        Search Medicines
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    {/* Detected Text */}
+                    {ocrResult.medicines.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="text-sm font-medium text-gray-700 mb-3">
+                          Detected from prescription:
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {ocrResult.medicines.map((med, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm"
+                            >
+                              {med.name}
+                              {med.dosage && ` ${med.dosage}`}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Matched Medicines from Database */}
+                    {ocrResult.matchedMedicines.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-700 mb-3">
+                          Available in our catalog:
+                        </h3>
+                        <div className="grid gap-3">
+                          {ocrResult.matchedMedicines.map((medicine) => (
+                            <div
+                              key={medicine.id}
+                              className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-orange-300 transition-colors"
+                            >
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">
+                                  {medicine.name}
+                                </h4>
+                                <p className="text-sm text-gray-500">
+                                  {medicine.manufacturer} | {medicine.pharmacyName}
+                                </p>
+                                <p className="text-lg font-bold text-orange-600 mt-1">
+                                  Rs. {medicine.price.toFixed(2)}
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                onClick={() => handleAddToCart(medicine)}
+                                disabled={addedToCart.has(medicine.id)}
+                                className={addedToCart.has(medicine.id) ? 'bg-green-600' : ''}
+                              >
+                                {addedToCart.has(medicine.id) ? (
+                                  <>
+                                    <Check className="mr-2 h-4 w-4" />
+                                    Added
+                                  </>
+                                ) : (
+                                  <>
+                                    <ShoppingCart className="mr-2 h-4 w-4" />
+                                    Add to Cart
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* OCR Confidence */}
+                    <p className="text-xs text-gray-400 mt-4">
+                      OCR Confidence: {ocrResult.confidence.toFixed(1)}%
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Patient Details */}
             <div className="bg-white rounded-lg shadow-sm p-6 md:p-8 mb-6">
@@ -366,13 +605,13 @@ export default function UploadPrescriptionPage() {
               >
                 {uploading ? (
                   <>
-                    <span className="material-icons animate-spin mr-2">refresh</span>
-                    Uploading...
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Processing...
                   </>
                 ) : (
                   <>
                     <Upload className="mr-2 h-5 w-5" />
-                    Upload & Continue
+                    Complete Upload
                   </>
                 )}
               </Button>
@@ -397,11 +636,11 @@ export default function UploadPrescriptionPage() {
 
           <div className="bg-white rounded-lg shadow-sm p-6 text-center">
             <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
-              <span className="material-icons text-green-600">local_pharmacy</span>
+              <span className="material-icons text-green-600">document_scanner</span>
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Verified by Pharmacist</h3>
+            <h3 className="font-semibold text-gray-900 mb-2">Auto Medicine Detection</h3>
             <p className="text-sm text-gray-600">
-              Licensed pharmacists review every prescription
+              We automatically extract medicine names from your prescription
             </p>
           </div>
 

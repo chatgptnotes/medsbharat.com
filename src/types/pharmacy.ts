@@ -17,13 +17,15 @@ export interface PharmacyWithDistance {
 export interface MedicineWithPharmacy {
   id: string
   name: string
-  genericName: string | null
+  description: string | null
   manufacturer: string | null
   category: string
-  strength: string | null
+  packSize: string | null
   price: number
   mrp: number | null
-  available: boolean
+  inStock: boolean
+  discountPercent: number | null
+  stockQuantity: number | null
   pharmacy: {
     id: string
     businessName: string
@@ -52,13 +54,17 @@ export interface PharmacyDetail {
 export interface Medicine {
   id: string
   name: string
-  genericName: string | null
-  manufacturer: string | null
+  description?: string | null
+  manufacturer?: string | null
   category: string
-  strength: string | null
+  packSize?: string | null
   price: number
-  mrp: number | null
-  available: boolean
+  mrp?: number | null
+  inStock?: boolean
+  discountPercent?: number | null
+  stockQuantity?: number | null
+  ingredients?: string | null
+  requiresPrescription?: boolean
 }
 
 export interface Review {

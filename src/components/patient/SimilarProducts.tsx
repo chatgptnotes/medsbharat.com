@@ -23,25 +23,26 @@ export function SimilarProducts({ medicineId, category, currentPrice }: SimilarP
         const maxPrice = currentPrice * 1.2
 
         const { data: medicines } = await supabase
-          .from('medicines')
+          .from('Medicine')
           .select(`
             id,
             name,
             price,
             manufacturer,
             category,
-            strength,
-            genericName,
+            packSize,
+            description,
             mrp,
-            available,
-            pharmacy:pharmacies!inner(id, businessName)
+            inStock,
+            discountPercent,
+            pharmacy:Pharmacy!inner(id, businessName)
           `)
           .eq('category', category)
-          .eq('available', true)
+          .eq('inStock', true)
           .neq('id', medicineId)
           .gte('price', minPrice)
           .lte('price', maxPrice)
-          .order('orderCount', { ascending: false })
+          .order('price', { ascending: true })
           .limit(4)
 
         if (medicines && medicines.length > 0) {

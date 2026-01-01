@@ -88,7 +88,7 @@ export function MedicineCard({ medicine }: MedicineCardProps) {
         mrp: medicine.mrp,
         pharmacyId: medicine.pharmacy.id,
         pharmacyName: medicine.pharmacy.businessName,
-        strength: medicine.strength,
+        strength: medicine.packSize,
         manufacturer: medicine.manufacturer,
       })
       console.log('Successfully added item to cart:', medicine.name)
@@ -117,14 +117,14 @@ export function MedicineCard({ medicine }: MedicineCardProps) {
         <div className="flex-1">
           <h3 className="font-semibold text-lg mb-1">{medicine.name}</h3>
 
-          {medicine.genericName && (
-            <p className="text-sm text-gray-600 mb-2">{medicine.genericName}</p>
+          {medicine.description && (
+            <p className="text-sm text-gray-600 mb-2">{medicine.description}</p>
           )}
 
           <div className="flex items-center gap-2 mb-2">
             <Badge variant="secondary">{medicine.category}</Badge>
-            {medicine.strength && (
-              <span className="text-sm text-gray-500">{medicine.strength}</span>
+            {medicine.packSize && (
+              <span className="text-sm text-gray-500">{medicine.packSize}</span>
             )}
           </div>
 
@@ -166,7 +166,7 @@ export function MedicineCard({ medicine }: MedicineCardProps) {
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          {!medicine.available ? (
+          {!medicine.inStock ? (
             <Badge variant="destructive">Out of Stock</Badge>
           ) : itemCount > 0 ? (
             <div className="flex items-center gap-2 border rounded-lg">

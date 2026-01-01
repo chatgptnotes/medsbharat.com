@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { CategoryTabs } from '@/components/homepage/CategoryTabs'
 import { RecentlyViewed } from '@/components/homepage/RecentlyViewed'
 import { TrendingProducts } from '@/components/homepage/TrendingProducts'
+import { FeaturedPharmacies } from '@/components/homepage/FeaturedPharmacies'
 import { NewArrivals } from '@/components/homepage/NewArrivals'
 import { Newsletter } from '@/components/homepage/Newsletter'
 import { DealOfTheDay } from '@/components/homepage/DealOfTheDay'
@@ -45,6 +46,9 @@ export default function PatientHomePage() {
 
       {/* Trending Products */}
       <TrendingProducts />
+
+      {/* Featured Pharmacies */}
+      <FeaturedPharmacies />
 
       {/* New Arrivals */}
       <NewArrivals />
