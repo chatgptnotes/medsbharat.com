@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { createClient } from '@supabase/supabase-js'
 
-// Lazy import prisma to avoid build-time initialization issues
+// Supabase client setup
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+// Lazy import prisma as fallback
 let prismaInstance: any = null
 const getPrisma = () => {
   if (!prismaInstance) {
-    prismaInstance = require('@/lib/prisma').prisma
+    try {
+      prismaInstance = require('@/lib/prisma').prisma
+    } catch (error) {
+      console.log("Prisma not available, using Supabase client")
+      return null
+    }
   }
   return prismaInstance
 }
@@ -33,49 +44,107 @@ export async function POST(request: NextRequest) {
 
     const { name, email, phone, password } = validationResult.data
 
-    const prisma = getPrisma()
+    try {
+      // Try Supabase client first
+      console.log("🔄 Trying Supabase client for registration...")
+      
+      // Check if user already exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('email')
+        .eq('email', email)
+        .single()
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    })
+      if (existingUser && !checkError) {
+        return NextResponse.json(
+          { error: 'Email already registered. Please login instead.' },
+          { status: 409 }
+        )
+      }
 
-    if (existingUser) {
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 12)
+
+      // Create user via Supabase
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert({
+          email,
+          name,
+          phone,
+          passwordHash: hashedPassword,
+          role: 'PATIENT',
+          emailVerified: new Date().toISOString(),
+          phoneVerified: new Date().toISOString()
+        })
+        .select('id, name, email, phone, role, createdAt')
+        .single()
+
+      if (createError) {
+        console.error("❌ Supabase error:", createError)
+        throw new Error("Supabase registration failed")
+      }
+
+      console.log("✅ Supabase registration successful")
       return NextResponse.json(
-        { error: 'Email already registered. Please login instead.' },
-        { status: 409 }
+        {
+          message: 'Account created successfully',
+          user: newUser,
+        },
+        { status: 201 }
+      )
+
+    } catch (supabaseError) {
+      console.error("🚨 Supabase failed, trying Prisma fallback:", supabaseError)
+      
+      // Fallback to Prisma if Supabase fails
+      const prisma = getPrisma()
+      if (!prisma) {
+        throw new Error("Both Supabase and Prisma unavailable")
+      }
+
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+      })
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'Email already registered. Please login instead.' },
+          { status: 409 }
+        )
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 12)
+
+      // Create user
+      const user = await prisma.user.create({
+        data: {
+          name,
+          email,
+          phone,
+          passwordHash: hashedPassword,
+          role: 'PATIENT',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+          createdAt: true,
+        },
+      })
+
+      return NextResponse.json(
+        {
+          message: 'Account created successfully',
+          user,
+        },
+        { status: 201 }
       )
     }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        phone,
-        passwordHash: hashedPassword,
-        role: 'PATIENT',
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-        createdAt: true,
-      },
-    })
-
-    return NextResponse.json(
-      {
-        message: 'Account created successfully',
-        user,
-      },
-      { status: 201 }
-    )
   } catch (error: any) {
     console.error('Registration error:', error)
     console.error('Error message:', error?.message)
